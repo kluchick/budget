@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+    <title>My budget</title>
+    <link rel="stylesheet" href="/css/app.css"/>
+    <link rel="stylesheet" href="js/lib/ng-table/ng-table.css"/>
+    <link rel="stylesheet" href="js/lib/ng-table/bootstrap.min.css"/>
+    <link rel="stylesheet" href="js/lib/ng-table/bootstrap-theme.min.css"/>
+
+    <script type="text/javascript" src="js/lib/angular/angular.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript" src="js/services.js"></script>
+    <script type="text/javascript" src="js/controllers.js"></script>
+    <script type="text/javascript" src="js/filters.js"></script>
+    <script type="text/javascript" src="js/directives.js"></script>
+    <script type="text/javascript" src="js/lib/ng-table/ng-table.js"></script>
+
+</head>
+<body>
+    <div ng-controller='AppCtrl'>
+        <h2>Hello {{name}}</h2>
+        <ul class="menu">
+            <li>
+                <a href="showCharges"> Show charges</a>
+            </li>
+            <li>
+                <a href="addCharge"> Add charge</a>
+            </li>
+            <li>
+                <a href="accounts"> Show accounts</a>
+            </li>
+            <li>
+                <a href="periods"> Show periods</a>
+            </li>
+            <li>
+                <a href="planning"> Planning </a>
+            </li>
+        </ul>
+        <p>Last info: {{budget.infoMessage}}</p>
+        <div ng-view></div>
+    </div>
+
+    <!--Charge list page-->
+    <script id="chargeList.html" type="text/ng-template">
+        <p>DateFrom: {{budget.dateFrom}}     DateTo: {{budget.dateTo}}</p>
+
+        <label for="dateFrom">От:</label>
+        <input id="dateFrom" ng-model="budget.dateFrom"/>
+        <label for="dateTo">До:</label>
+        <input ng-model="budget.dateTo" id="dateTo"/>
+        <label for="categoryId">Категория:</label>
+        <select ng-model="selectedCategory" id="categoryId" ng-options="i.Name for i in budget.categories">
+            <option value=""></option>
+        </select>
+        <input type="button" ng-click="getCharges()" value="Выбрать"/>
+
+        <table class="table" ng-table="tableParams">
+            <tr ng-repeat="charge in budget.charges">
+                <td data-title="'Нименование'">{{charge.Name}}</td>
+                <td data-title="'Категория'">{{charge.category}}</td>
+                <td data-title="'Стоимость'">{{charge.Money}}</td>
+                <td data-title="'Дата'">{{charge.Date}}</td>
+                <td data-title="'Счет'">{{charge.account}}</td>
+            </tr>
+        </table>
+        Всего: {{budget.sumMoney}}
+    </script>
+
+<!-- Add charge page -->
+    <script id="addCharge.html" type="text/ng-template">
+        <div class="addCharge">
+            <p>
+                <label for="name">Наименование</label>
+                <input type="text" id="name" name="name" ng-model="budget.curCharge.name"/>
+            </p>
+            <p>
+                <label for="money">Сумма</label>
+                <input type="button" value="-" ng-click="budget.curCharge.money=budget.curCharge.money-50"/>
+                <input type="text" id="money" name="money" ng-model="budget.curCharge.money"/>
+                <input type="button" value="+" ng-click="budget.curCharge.money=budget.curCharge.money+50"/>
+            </p>
+            <p>
+                <label for="category" ng-click="setDefaultCategory()">Категория</label>
+                <!--<input type="text" id="category" name="category"/>-->
+                <select ng-model="budget.curCharge.selectedCategory" ng-options="i.Name for i in budget.categories" ng-show="budget.curCharge.selectedCategory">
+                    <option value="">-- добавить категорию --</option>
+                </select>
+                <input type="text" ng-model = "budget.curCharge.newCategory" ng-show="!budget.curCharge.selectedCategory" />
+            </p>
+            <p>
+                <label for="account">Счет</label>
+                <select ng-model="budget.curCharge.selectedAccount" ng-options="i.name for i in budget.accounts"></select>
+                <input type="button" value="+" ng-click="isTransferMoeny = true"/>
+                
+                <p class="transferMoeny" ng-show="isTransferMoeny">
+                    <label for="transferAccount">На счет</label>
+                    <select ng-model="budget.curCharge.transferAccount" ng-options="i.name for i in budget.accounts" id="transferAccount"></select>
+                </p>
+            </p>
+            <p>
+                <input type="button" value="Добавить" ng-click="budget.addCharge(budget.curCharge.name, budget.curCharge.money, budget.curCharge.selectedCategory.id, budget.curCharge.selectedAccount.id, budget.curCharge.transferAccount.id)"/>
+            </p>
+        </div>
+    </script>
+
+    <!--Account list page-->
+    <script id="accounts.html" type="text/ng-template">
+        <table ng-table class="table">
+            <tr ng-repeat="account in budget.accounts">
+                <td data-title="'Name'">{{account.name}}</td>
+                <td data-title="'Money'">{{account.money}}</td>
+            </tr>
+        </table>
+        <p>
+            Общий остаток: {{budget.totals.totalRest}}
+        </p> 
+        <p>
+            <input type="button" value="Изменить счет" ng-show="!isChangeAccount" ng-click="isChangeAccount = true" ng-init="isChangeAccount = false"/>
+        </p>    
+        <p ng-show="isChangeAccount">
+            <label for="accountName">Имя: </label>
+            <select ng-model="accountToChange" ng-options="i.name for i in budget.accounts"></select>
+            <input type="text" ng-model = "accountToChangeValue" />
+            <input type="button" value="Изменить" ng-click="changeAccountValue(accountToChange, accountToChangeValue)"/>
+        </p>   
+    </script>
+
+    <!--Period list page-->
+    <script id="periods.html" type="text/ng-template">
+        <p>Current period: {{budget.curPeriod || 'null'}} </p>
+        <table ng-table class="table">
+            <tr ng-repeat="period in budget.periods">
+                <td data-title="'Id'">{{period.id}}</td>
+                <td data-title="'Name'">{{period.name}}</td>
+                <td data-title="'From date'">{{period.dateFrom}}</td>
+                <td data-title="'To date'">{{period.dateTo}}</td>
+            </tr>
+        </table>
+        <p>
+            <input type="button" value="Закончить текущий период" ng-click="finishCurrentPeriod()"/>
+        </p>
+        <div class="addPeriod">
+            <p>
+                <input type="button" value="Добавить период" ng-show="!showInsertPeriod" ng-click="showInsertPeriod = true" ng-init="showInsertPeriod = false"/>
+            </p>    
+            <p>
+                <label for="periodName" ng-show="showInsertPeriod">Имя: </label>
+                <input type="text" ng-model = "periodName" id="periodName" ng-show="showInsertPeriod" />
+                <label for="dateFrom" ng-show="showInsertPeriod">From date: </label>
+                <input type="text" ng-model = "dateFrom" id="dateFrom" ng-show="showInsertPeriod" />
+                <input type="button" value="Добавить" ng-show="showInsertPeriod" ng-click="addNewPeriod(periodName, dateFrom)"/>
+            </p>    
+        </div>
+
+    </script>
+
+    <!--Planning list page-->
+    <script id="planning.html" type="text/ng-template">
+        <p>
+            Потречено: {{budget.totals.totalSpend}}   Осталось: {{budget.totals.totalRest}}      
+        </p>
+        <p>
+            Запланированых трат: {{budget.totals.totalRestToSpend}}   Запланированный остаток: {{budget.totals.totalRest - budget.totals.totalRestToSpend}}
+        </p>
+        <table ng-table class="table">
+            <tr ng-repeat="plan in budget.currentPlans">
+                <td data-title="'Категория'">{{plan.categoryName}}</td>
+                <td data-title="'Потрачено'">{{plan.spend}}</td>
+                <td data-title="'Запланировано'">{{plan.planned}}</td>
+                <td data-title="'Осталось'">{{calcLeft(plan.planned, plan.spend)}}</td>
+            </tr>
+        </table>
+
+        <div class="addPlan">
+            <p>
+                <input type="button" value="Добавить запись" ng-show="!showInsertPlan" ng-click="showInsertPlan = true" ng-init="showInsertPlan = false"/>
+                <div class="newPlan" ng-show="showInsertPlan">
+                    <label for="category" ng-click="setDefaultCategory()">Категория</label>
+                    <select ng-model="newPlanCategory" ng-options="i.Name for i in budget.categories" ng-show="newPlanCategory">
+                        <option value="">-- Добавить категорию --</option>
+                    </select>
+                    <input type="text" ng-model = "createCategoryName" ng-init="createCategoryName = null" ng-show="!newPlanCategory" />
+                    <label for="newPlanMoney">Сумма</label>
+                    <input type="text" id="newPlanMoney" ng-model = "newPlanMoney"/>
+                    <input type="button" value="Добавить" ng-click="addNewPlan(selectedPeriod, newPlanCategory.id, newPlanMoney, createCategoryName)"/>
+                </div>
+
+            </p>    
+        </div>
+    </script>
+</body>
+
+</html>
