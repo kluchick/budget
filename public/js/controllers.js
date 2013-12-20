@@ -242,7 +242,7 @@ Add new planing value
  */
     $scope.calcLeft = function (planned, spend){
         var result = planned;
-        if (planned !== null && spend !== null){
+        if (planned !== null && spend !== null && planned !== 0){
             result = planned - spend;
         }
     return result;
