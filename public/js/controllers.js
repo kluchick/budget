@@ -197,6 +197,14 @@ function PlanningCtl ($scope, $http) {
 Add new planing value
  */
     $scope.addNewPlan = function(period, categoryId, money, createCategoryName){
+        var needUpdate = 0;
+        for (var i in $scope.budget.currentPlans){
+            var cur = $scope.budget.currentPlans[i];
+            if (cur.categoryId === categoryId && cur.planned > 0){
+                needUpdate = 1;
+            }
+        }
+        console.log('addNewPlan.needUpdate = '+needUpdate);
         if (createCategoryName != null){
             $scope.budget.addCategory(createCategoryName, function(err, categoryId){
                 if (categoryId){
@@ -217,6 +225,19 @@ Add new planing value
                             $scope.budget.infoMessage = data.result;
                     });
                 }
+            });
+        }else if (needUpdate){
+            $http({
+                method: 'POST',
+                url: '/api/updatePlan',
+                data: {period: period, categoryId: categoryId, money: money}
+            }).
+                success(function (data, status, headers, config) {
+                    $scope.budget.infoMessage = data.result;
+
+                }).
+                error(function (data, status, headers, config) {
+                    $scope.budget.infoMessage = data.result;
             });
         }else{
             $http({
@@ -242,8 +263,11 @@ Add new planing value
  */
     $scope.calcLeft = function (planned, spend){
         var result = planned;
-        if (planned !== null && spend !== null && planned !== 0){
+        if (planned !== null && spend !== null){
             result = planned - spend;
+            if (result < 0){
+                result = 0;
+            }
         }
     return result;
     };

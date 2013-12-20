@@ -264,6 +264,30 @@ exports.addNewPlan = function(req, res){
     }
 };
 
+/**
+ * API method for update period in DB
+ * method: POST
+ * params: period, categoryId, money
+ */
+exports.updatePlan = function(req, res){
+    var period = checkPresent(req.body.period);
+    var categoryId = checkPresent(req.body.categoryId);
+    var money = checkPresent(req.body.money);
+    console.log('updatePlan: period = '+period+'; categoryId = '+categoryId+'; money = '+money);
+    if (period && categoryId && money){
+        updatePlan(period, categoryId, money, function(err, result){
+            if (err){
+                console.log('updatePlan error: '+err);
+                res.json({result: 'Error duing inserting new plan entry'});
+            }else{
+                res.json({result: 'New plan entry has been successfully updated'});
+            }
+        });
+    }else{
+        res.json({result: 'One or more parameter for function updatePlan are not defined'});
+    }
+};
+
 
 /**
  *                  Function block
@@ -635,6 +659,25 @@ function addNewPlan(period, categoryId, money, callback){
     connection.query(sql, [period, categoryId, money], function(err, rows, fields){
         if (err){
             console.log('api.addNewPlan error: '+err);
+            callback(err, null);
+        }else{
+            callback(null, 'new plan entry successfully inserted.');
+        }
+    });
+}
+
+/**
+ * Function for inserting new plan entry in DB
+ * @param {[type]}   dateFrom [start date of the new period]
+ * @param {Function} callback [description]
+ */
+function updatePlan(period, categoryId, money, callback){
+    console.log('api.updatePlan : period = '+period+'; categoryId = '+categoryId+'; money = '+money);
+    getConnection();
+    var sql = "update plan set value = ? where periodId = ? and categoryId = ? ";
+    connection.query(sql, [money, period, categoryId], function(err, rows, fields){
+        if (err){
+            console.log('api.updatePlan error: '+err);
             callback(err, null);
         }else{
             callback(null, 'new plan entry successfully inserted.');

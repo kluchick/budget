@@ -55,6 +55,7 @@ app.post('/api/addCategory', api.addCategory);
 app.post('/api/finishCurPeriod', api.finishCurPeriod);
 app.post('/api/addNewPeriod', api.addNewPeriod);
 app.post('/api/addNewPlan', api.addNewPlan);
+app.post('/api/updatePlan', api.updatePlan);
 app.post('/api/changeAccountValue', api.changeAccountValue);
 
 

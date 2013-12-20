@@ -173,7 +173,7 @@
 
         <div class="addPlan">
             <p>
-                <input type="button" value="Добавить запись" ng-show="!showInsertPlan" ng-click="showInsertPlan = true" ng-init="showInsertPlan = false"/>
+                <input type="button" value="Изменить запись" ng-show="!showInsertPlan" ng-click="showInsertPlan = true" ng-init="showInsertPlan = false"/>
                 <div class="newPlan" ng-show="showInsertPlan">
                     <label for="category" ng-click="setDefaultCategory()">Категория</label>
                     <select ng-model="newPlanCategory" ng-options="i.Name for i in budget.categories" ng-show="newPlanCategory">
@@ -182,7 +182,7 @@
                     <input type="text" ng-model = "createCategoryName" ng-init="createCategoryName = null" ng-show="!newPlanCategory" />
                     <label for="newPlanMoney">Сумма</label>
                     <input type="text" id="newPlanMoney" ng-model = "newPlanMoney"/>
-                    <input type="button" value="Добавить" ng-click="addNewPlan(selectedPeriod, newPlanCategory.id, newPlanMoney, createCategoryName)"/>
+                    <input type="button" value="Изменить" ng-click="addNewPlan(selectedPeriod, newPlanCategory.id, newPlanMoney, createCategoryName)"/>
                 </div>
 
             </p>    
